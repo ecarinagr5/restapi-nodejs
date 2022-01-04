@@ -1,12 +1,12 @@
+//Structure node: 1-nodes imports goes first
+//require('fs')
+//require ('http')
+
+//Structure node: 2-Third imports goes seconds
 require("dotenv").config();
+const Server = require("./models/server");
+// create instance of server
+const server = new Server();
 
-
-const app = express();
-
-app.get("/", function (req, res) {
-  res.send("Hello World");
-});
-
-app.listen(process.env.PORT, () => {
-  console.log("servidor corriendo en puerto", process.env.PORT);
-});
+//listen server
+server.listen();
