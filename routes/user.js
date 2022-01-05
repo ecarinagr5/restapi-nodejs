@@ -1,7 +1,12 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 const { validarCampos } = require("../middlewares/validar-campos");
-const Role = require("../models/role");
+const {
+  esRolValido,
+  emailIsValid,
+  existeUsuarioPorId,
+} = require("../helpers/db-validators");
+
 const {
   usuariosGet,
   usuariosPut,
@@ -12,10 +17,22 @@ const {
 
 const router = Router();
 
+//GET
 router.get("/", usuariosGet);
 
-router.put("/:id", usuariosPut);
+//PUT
+router.put(
+  "/:id",
+  [
+    check("id", "No es un ID válido").isMongoId(),
+    check("id").custom(existeUsuarioPorId),
+    check("rol").custom(esRolValido),
+    validarCampos,
+  ],
+  usuariosPut
+);
 
+//POST
 router.post(
   "/",
   [
@@ -26,21 +43,19 @@ router.post(
     )
       .not()
       .isEmpty(),
-    check("email", "Email is wrong").isEmail(),
+    check("email").custom(emailIsValid),
+    //check("email", "Email is wrong").isEmail(),
     //check("rol", "Rol is not valid").isIn(["ADMIN_ROLE", "USER_ROLE"]),
-    check("rol").custom(async (rol = "") => {
-      const existeRol = await Role.findOne({ rol });
-      if (!existeRol) {
-        throw new Error(`El rol ${rol} no está registrado en BD`);
-      }
-    }),
+    check("rol").custom(esRolValido),
     validarCampos,
   ],
   usuariosPost
 );
 
+//DELETE
 router.delete("/", usuariosDelete);
 
+//PATCH
 router.patch("/", usuariosPatch);
 
 module.exports = router;
